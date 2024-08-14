@@ -5,56 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emotion Recognition</title>
     <style>
+        /* General Body Styling */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
-            padding: 50px;
-        }
-
-        h1 {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
             color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        input[type="text"], button {
+        /* Container */
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        /* Title Styling */
+        h1 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        /* Input Field Styling */
+        input[type="text"], input[type="file"] {
+            width: calc(100% - 22px);
             padding: 10px;
             font-size: 16px;
-            margin: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            outline: none;
         }
 
+        /* Button Styling */
         button {
-            background-color: #007bff;
-            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 5px;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        /* Button Color Scheme */
+        .btn-primary {
+            background-color: #4a90e2;
+            color: #fff;
         }
 
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .btn-secondary {
+            background-color: #50e3c2;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #3cb89a;
+        }
+
+        /* Result Styling */
         #result {
             margin-top: 20px;
             font-size: 20px;
-            color: #333;
+            color: #4a90e2;
+            font-weight: bold;
         }
+
+        /* Error Message */
+        #error {
+            color: #e94b3c;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Emotion Recognition from Text or Speech</h1>
+    <div class="container">
+        <h1>EmotiSense</h1>
+		<h3>Decode emotions instantly from text or voice with a touch of intelligence</h3>
+        <input type="text" id="textInput" placeholder="Enter text here">
+        <div>
+            <button class="btn-primary" onclick="recognizeEmotion()">Predict Emotion</button>
+            <button class="btn-secondary" onclick="startVoiceRecognition()">Use Voice</button>
+        </div>
+        <div>
+            <input type="file" id="audioFileInput" accept="audio/*">
+            <button class="btn-secondary" onclick="uploadAudioFile()">Upload Voice Note</button>
+        </div>
 
-    <input type="text" id="textInput" placeholder="Enter text here">
-    <button onclick="recognizeEmotion()">Predict Emotion</button>
-    <button onclick="startVoiceRecognition()">Use Voice</button>
-
-    <div id="result"></div>
+        <div id="result"></div>
+        <div id="error"></div>
+    </div>
 
     <script>
         function recognizeEmotion() {
             const text = document.getElementById('textInput').value;
+            document.getElementById('error').innerText = "";
+            document.getElementById('result').innerText = "";
+
             if (text.trim() === "") {
-                alert("Please enter some text.");
+                document.getElementById('error').innerText = "Please enter some text.";
                 return;
             }
 
@@ -71,7 +137,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('result').innerText = "Error occurred";
+                document.getElementById('error').innerText = "Error occurred";
             });
         }
 
@@ -91,8 +157,34 @@
 
             recognition.onerror = function(event) {
                 console.error('Speech recognition error detected: ' + event.error);
-                document.getElementById('result').innerText = "Error: " + event.error;
+                document.getElementById('error').innerText = "Error: " + event.error;
             };
+        }
+
+        function uploadAudioFile() {
+            const audioFileInput = document.getElementById('audioFileInput');
+            const file = audioFileInput.files[0];
+
+            if (!file) {
+                document.getElementById('error').innerText = "Please select an audio file.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('audio', file);
+
+            fetch('http://localhost:5000/predict-audio', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerText = "Emotion: " + data.emotion;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error').innerText = "Error occurred";
+            });
         }
     </script>
 
