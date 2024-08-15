@@ -10,18 +10,6 @@ app = Flask(__name__)
 # Load the trained model
 model = load_model('emotion_recognition_model.h5')
 
-# Define the emotion mapping
-emotion_map = {
-    0: "neutral",
-    1: "calm",
-    2: "happy",
-    3: "sad",
-    4: "angry",
-    5: "fearful",
-    6: "disgust",
-    7: "surprised"
-}
-
 # Function to extract features from the audio file
 def extract_features(file_path):
     try:
@@ -67,14 +55,11 @@ def predict():
     prediction = model.predict(features)
     predicted_emotion = np.argmax(prediction, axis=1)[0]
     
-    # Map the prediction to the corresponding emotion label
-    emotion_label = emotion_map.get(predicted_emotion, "Unknown emotion")
-    
     # Clean up the uploaded file
     os.remove(file_path)
     
-    print(f"Predicted emotion: {emotion_label}")
-    return jsonify({'predicted_emotion': emotion_label})
+    print(f"Predicted emotion: {predicted_emotion}")
+    return jsonify({'predicted_emotion': int(predicted_emotion)})
 
 if __name__ == '__main__':
     # Create uploads folder if it doesn't exist
